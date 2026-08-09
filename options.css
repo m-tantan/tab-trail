@@ -1,0 +1,134 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #172033;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+main {
+  max-width: 720px;
+  margin: 48px auto;
+  padding: 0 24px;
+}
+
+h1 {
+  margin: 4px 0 12px;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+p {
+  line-height: 1.55;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #53617a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+section {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #d9deea;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+dl {
+  margin: 0;
+}
+
+.command-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e3e7ef;
+}
+
+.command-row:last-child {
+  border-bottom: 0;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin: 0;
+}
+
+kbd,
+code {
+  padding: 3px 7px;
+  border: 1px solid #c8cfdd;
+  border-radius: 5px;
+  background: #eef1f6;
+  font-family: Consolas, monospace;
+}
+
+.address-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.address-row code {
+  flex: 1;
+  padding: 10px;
+}
+
+button {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 7px;
+  color: #ffffff;
+  background: #315bea;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#copy-status {
+  min-height: 24px;
+  margin-bottom: 0;
+  color: #53617a;
+  font-size: 13px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f0f3f9;
+    background: #121722;
+  }
+
+  section {
+    border-color: #313b50;
+    background: #1b2230;
+  }
+
+  .command-row {
+    border-color: #313b50;
+  }
+
+  kbd,
+  code {
+    border-color: #4c5870;
+    background: #121722;
+  }
+}

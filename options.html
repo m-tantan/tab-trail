@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tab Trail shortcuts</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Tab Trail</p>
+      <h1>Keyboard shortcuts</h1>
+      <p>
+        Chromium requires shortcut changes to be made on its extension-shortcuts page.
+        The mappings below show what is currently assigned in this browser profile.
+      </p>
+
+      <section>
+        <dl id="command-list"></dl>
+      </section>
+
+      <section>
+        <h2>Configure the keys</h2>
+        <p>
+          Copy the address for your browser, paste it into the address bar, and edit Tab Trail's commands.
+          If the arrow mappings conflict, use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>[</kbd> and
+          <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>]</kbd>.
+        </p>
+        <div class="address-row">
+          <code id="shortcut-url"></code>
+          <button id="copy-url" type="button">Copy</button>
+        </div>
+        <p id="copy-status" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

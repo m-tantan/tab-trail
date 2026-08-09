@@ -1,0 +1,240 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: #172033;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  margin: 0;
+}
+
+main {
+  padding: 18px;
+}
+
+header,
+.section-heading,
+.button-row {
+  display: flex;
+  align-items: center;
+}
+
+header,
+.section-heading {
+  justify-content: space-between;
+}
+
+header {
+  margin-bottom: 16px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  margin-bottom: 9px;
+  font-size: 13px;
+}
+
+.eyebrow,
+.section-heading span {
+  color: #53617a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+section {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid #d9deea;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 5px 18px rgb(27 39 66 / 7%);
+}
+
+input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #b9c2d3;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.button-row {
+  gap: 8px;
+  margin-top: 9px;
+}
+
+button {
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.primary {
+  color: #ffffff;
+  background: #315bea;
+}
+
+.secondary,
+.icon-button {
+  color: #27324a;
+  background: #edf0f6;
+}
+
+.icon-button {
+  width: 36px;
+  padding: 0;
+  font-size: 18px;
+}
+
+.navigation {
+  flex: 1;
+}
+
+ol {
+  max-height: 220px;
+  margin: 12px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.history-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-top: 5px;
+  padding: 8px;
+  text-align: left;
+  background: transparent;
+}
+
+.history-item:hover {
+  background: #f0f3fa;
+}
+
+.history-item.current {
+  color: #244bc5;
+  background: #eaf0ff;
+}
+
+.history-item img,
+.favicon-placeholder {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.favicon-placeholder {
+  border-radius: 50%;
+  background: #bfc8db;
+}
+
+.tab-details {
+  min-width: 0;
+}
+
+.tab-title,
+.tab-url {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-title {
+  font-size: 12px;
+}
+
+.tab-url {
+  margin-top: 2px;
+  color: #69758d;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.muted,
+#status {
+  color: #69758d;
+  font-size: 11px;
+}
+
+#status {
+  min-height: 16px;
+  margin-top: 10px;
+}
+
+#status.error {
+  color: #b42318;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f0f3f9;
+    background: #121722;
+  }
+
+  section {
+    border-color: #313b50;
+    background: #1b2230;
+  }
+
+  input {
+    border-color: #4c5870;
+    background: #121722;
+  }
+
+  .secondary,
+  .icon-button {
+    color: #eef2fa;
+    background: #30394b;
+  }
+
+  .history-item:hover {
+    background: #283144;
+  }
+
+  .history-item.current {
+    color: #aabfff;
+    background: #28385d;
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Trail",
+  "version": "1.0.0",
+  "description": "Rename tabs and navigate a per-window history of recently active tabs.",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Tab Trail",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "title-keeper.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+R"
+      }
+    },
+    "history-back": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Left"
+      },
+      "description": "Go back through active-tab history"
+    },
+    "history-forward": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Right"
+      },
+      "description": "Go forward through active-tab history"
+    }
+  },
+  "options_page": "options.html"
+}
