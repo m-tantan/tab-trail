@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tab Trail popup preview</title>
+    <link rel="stylesheet" href="../popup.css">
+    <style>
+      html {
+        background: #f5f7fb;
+      }
+
+      body {
+        width: 396px;
+        padding: 18px;
+      }
+
+      body > main {
+        width: 360px;
+        border: 1px solid #d9deea;
+        border-radius: 16px;
+        background: #f5f7fb;
+        box-shadow: 0 18px 45px rgb(27 39 66 / 18%);
+      }
+
+      .favicon-placeholder.blue {
+        background: #315bea;
+      }
+
+      .favicon-placeholder.green {
+        background: #28b79f;
+      }
+
+      .favicon-placeholder.orange {
+        background: #f59e0b;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Tab Trail</p>
+          <h1>Rename and retrace</h1>
+        </div>
+        <button class="icon-button" title="Configure shortcuts" type="button">&#9881;</button>
+      </header>
+
+      <section aria-labelledby="rename-heading">
+        <h2 id="rename-heading">Current tab name</h2>
+        <input value="Release dashboard" aria-label="Custom tab name">
+        <div class="button-row">
+          <button class="primary" type="button">Rename</button>
+          <button class="secondary" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section aria-labelledby="history-heading">
+        <div class="section-heading">
+          <h2 id="history-heading">Active-tab history</h2>
+          <span>20 max</span>
+        </div>
+        <div class="button-row">
+          <button class="secondary navigation" type="button">&larr; Back</button>
+          <button class="secondary navigation" type="button">Forward &rarr;</button>
+        </div>
+        <ol>
+          <li>
+            <button class="history-item current" type="button">
+              <span class="favicon-placeholder green"></span>
+              <span class="tab-details">
+                <span class="tab-title">Release dashboard</span>
+                <span class="tab-url">github.com</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button class="history-item" type="button">
+              <span class="favicon-placeholder blue"></span>
+              <span class="tab-details">
+                <span class="tab-title">Tab M · Investigation notes</span>
+                <span class="tab-url">dev.azure.com</span>
+              </span>
+            </button>
+          </li>
+          <li>
+            <button class="history-item" type="button">
+              <span class="favicon-placeholder orange"></span>
+              <span class="tab-details">
+                <span class="tab-title">Architecture reference</span>
+                <span class="tab-url">learn.microsoft.com</span>
+              </span>
+            </button>
+          </li>
+        </ol>
+      </section>
+
+      <p id="status" role="status">History is isolated to this browser window.</p>
+    </main>
+  </body>
+</html>

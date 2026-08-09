@@ -1,0 +1,33 @@
+# Social post draft
+
+I built a tiny browser extension for a problem that kept interrupting my flow:
+
+**tab order is not the same as work history.**
+
+If I jump from tab M to tab N, with five unrelated tabs between them, I do not want to step through
+every tab to get back. Tab Trail remembers the tabs I actually visited:
+
+⬅️ `Ctrl+Shift+Left` returns to M  
+➡️ `Ctrl+Shift+Right` moves forward to N
+
+It also lets me rename noisy tab titles, keeps a 20-tab LRU trail per browser window, and stores each
+browser profile independently.
+
+The extension is native Manifest V3, works in Chrome and Edge, has no dependencies or analytics,
+and runs entirely inside the browser.
+
+Source: https://github.com/yomanor_microsoft/tab-trail
+
+#BrowserExtension #OpenSource #Productivity #Chrome #MicrosoftEdge
+
+## Short version
+
+I wanted browser navigation to follow my attention, not the tab strip.
+
+Tab Trail remembers the tabs I actually visited, so I can jump from M to N and use back/forward
+shortcuts to move between them even when five unrelated tabs sit in the middle. It also supports tab
+renaming and keeps an isolated 20-tab trail per window.
+
+Native Chrome + Edge extension. No dependencies, no analytics.
+
+https://github.com/yomanor_microsoft/tab-trail
