@@ -2,8 +2,8 @@
   <img src="icons/icon-128.png" width="96" alt="Tab Trail logo">
   <h1>Tab Trail</h1>
   <p>
-    Rename browser tabs and retrace the tabs you actually visited, not merely the tabs sitting
-    next to each other.
+    Rename browser tabs and retrace the tabs you actually visited across windows, not merely the
+    tabs sitting next to each other.
   </p>
   <p>
     <strong>Native Manifest V3 · Chrome + Edge · No dependencies · No analytics</strong>
@@ -21,40 +21,46 @@ between them. Tab Trail remembers the path you took:
 ```text
 Visited: M → N
 
-Ctrl+Shift+Left   → M
-Ctrl+Shift+Right  → N
+Alt+Shift+Left   → M
+Alt+Shift+Right  → N
 ```
 
-Each browser window keeps its own 20-tab least-recently-used trail. Browser profiles remain isolated
-automatically because Chromium gives every profile separate extension storage.
+Each browser profile keeps one 20-tab least-recently-used trail across all its browser windows.
+Profiles remain isolated automatically because Chromium gives every profile separate extension
+storage.
 
 ## Quick walkthrough
 
 1. Open several tabs, including two that are far apart in the tab strip.
 2. Work in the first tab, then select the second tab.
-3. Press `Ctrl+Shift+Left` to return directly to the first tab.
-4. Press `Ctrl+Shift+Right` to move forward to the second tab again.
-5. Open the popup to rename either tab or jump directly to another recent entry.
+3. Press `Alt+Shift+Left` to return directly to the first tab.
+4. Press `Alt+Shift+Right` to move forward to the second tab again.
+5. Open the popup to see your current trail or jump directly to another recent entry.
+6. Press `Alt+R` to open the focused rename experience for the current tab.
 
 Tab Trail follows your activation path. It does not cycle through every tab positioned between the
-two tabs.
+two tabs, and it can focus a tab in another browser window.
 
 ## The popup
 
 <div align="center">
-  <img src="docs/popup-preview.png" width="396" alt="Tab Trail popup showing rename controls and tab history">
+  <img src="docs/popup-preview.png" width="396" alt="Tab Trail popup showing profile-wide tab history">
 </div>
 
-The popup lets you rename the current tab, navigate backward or forward, jump directly to an entry,
-and open the browser's shortcut configuration guidance.
+The compact popup shows the current history position, marks entries from other windows, lets you
+navigate backward or forward, and opens the browser's shortcut configuration guidance.
+
+Tab renaming stays separate from the compact history popup. Press `Alt+R` to open the rename window
+for the current tab.
 
 ## Features
 
-- Rename the active tab and preserve its custom title across page reloads.
+- Rename the active tab with `Alt+R` and preserve its custom title across page reloads.
 - Navigate backward and forward through activation history rather than tab-strip position.
-- Keep 20 unique recently visited tabs per browser window using LRU ordering.
+- Move directly between recently used tabs in different browser windows.
+- Keep 20 unique recently visited tabs per browser profile using LRU ordering.
 - Remove closed tabs from the trail automatically.
-- Maintain independent state for every browser window and browser profile.
+- Maintain independent state for every browser profile.
 - Inspect and select recent tabs from the popup.
 - Configure browser-profile-specific keyboard shortcuts.
 - Run entirely in the browser without frameworks, build tools, telemetry, or external services.
@@ -88,9 +94,9 @@ Tab Trail requests these defaults:
 
 | Action | Requested shortcut |
 | --- | --- |
-| Open the rename popup | `Alt+R` |
-| Previous active tab | `Ctrl+Shift+Left` |
-| Next active tab | `Ctrl+Shift+Right` |
+| Rename the current tab | `Alt+R` |
+| Previous active tab | `Alt+Shift+Left` |
+| Next active tab | `Alt+Shift+Right` |
 
 Chromium may leave a shortcut unassigned when it conflicts with the browser, operating system, or
 another extension. Open Tab Trail, select the gear button, and use the displayed shortcut page:
@@ -99,7 +105,8 @@ another extension. Open Tab Trail, select the gear button, and use the displayed
 - Edge: `edge://extensions/shortcuts`
 
 Search for **Tab Trail**, select the pencil beside each command, and enter the preferred keys. If
-the arrow shortcuts conflict, try:
+either arrow shortcut was cleared, assign `Alt+Shift+Left` and `Alt+Shift+Right` again. If those
+shortcuts conflict, try:
 
 | Action | Suggested fallback |
 | --- | --- |
@@ -110,22 +117,16 @@ Shortcut assignments are intentionally profile-specific.
 
 ## How the trail behaves
 
-1. Activating a tab moves it to the newest position in the current window's trail.
+1. Activating a tab or focusing its window moves it to the newest position in the profile's trail.
 2. Revisiting an existing tab updates its position instead of creating a duplicate.
 3. Going backward and then activating a different tab starts a new forward path.
 4. Closing a tab removes it from saved history.
 5. The oldest entry is removed when the trail exceeds 20 tabs.
 
-## Rename behavior and browser restrictions
-
-Custom names last while the tab remains open and are reapplied after normal page reloads. Chromium
-blocks extensions from changing protected pages such as browser settings, extension stores, and
-some built-in pages. Tab Trail reports that limitation instead of silently failing.
-
 ## Privacy
 
-Tab Trail stores tab IDs, per-window history, and custom names in the current profile's local
-extension storage. It does not transmit data, load remote code, or use analytics.
+Tab Trail stores tab IDs, custom names, and profile-wide navigation history in the current profile's
+local extension storage. It does not transmit data, load remote code, or use analytics.
 
 ## README and social assets
 

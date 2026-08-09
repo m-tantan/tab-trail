@@ -1,32 +1,26 @@
 const HISTORY_LIMIT = 20;
+const HISTORY_KEY = "profileHistory";
+const LEGACY_HISTORY_PREFIX = "windowHistory:";
 const CUSTOM_NAMES_KEY = "customNames";
-const HISTORY_PREFIX = "windowHistory:";
 
-const suppressedActivations = new Map();
-const windowLocks = new Map();
+let historyLock = Promise.resolve();
 
-function historyKey(windowId) {
-  return `${HISTORY_PREFIX}${windowId}`;
-}
-
-async function withWindowLock(windowId, operation) {
-  const previous = windowLocks.get(windowId) || Promise.resolve();
-  const current = previous.catch(() => {}).then(operation);
-  windowLocks.set(windowId, current);
+async function withHistoryLock(operation) {
+  const current = historyLock.catch(() => {}).then(operation);
+  historyLock = current;
 
   try {
     return await current;
   } finally {
-    if (windowLocks.get(windowId) === current) {
-      windowLocks.delete(windowId);
+    if (historyLock === current) {
+      historyLock = Promise.resolve();
     }
   }
 }
 
-async function loadHistory(windowId) {
-  const key = historyKey(windowId);
-  const stored = await chrome.storage.local.get(key);
-  const state = stored[key];
+async function loadHistory() {
+  const stored = await chrome.storage.local.get(HISTORY_KEY);
+  const state = stored[HISTORY_KEY];
 
   if (!state || !Array.isArray(state.entries)) {
     return { entries: [], cursor: -1 };
@@ -38,17 +32,17 @@ async function loadHistory(windowId) {
   };
 }
 
-async function saveHistory(windowId, state) {
-  await chrome.storage.local.set({ [historyKey(windowId)]: state });
+async function saveHistory(state) {
+  await chrome.storage.local.set({ [HISTORY_KEY]: state });
 }
 
-async function getExistingTabIds(windowId) {
-  const tabs = await chrome.tabs.query({ windowId });
+async function getExistingTabIds() {
+  const tabs = await chrome.tabs.query({});
   return new Set(tabs.map((tab) => tab.id).filter(Number.isInteger));
 }
 
-async function pruneHistory(windowId, state) {
-  const existingIds = await getExistingTabIds(windowId);
+async function pruneHistory(state) {
+  const existingIds = await getExistingTabIds();
   const currentTabId = state.entries[state.cursor];
   const entries = state.entries.filter((tabId) => existingIds.has(tabId));
   const cursor = currentTabId === undefined ? entries.length - 1 : entries.indexOf(currentTabId);
@@ -59,15 +53,15 @@ async function pruneHistory(windowId, state) {
   };
 }
 
-async function recordActivation(windowId, tabId) {
-  return withWindowLock(windowId, async () => {
-    const suppressedTabId = suppressedActivations.get(windowId);
-    if (suppressedTabId === tabId) {
-      suppressedActivations.delete(windowId);
+async function recordActivation(tabId) {
+  return withHistoryLock(async () => {
+    const tab = await chrome.tabs.get(tabId);
+    const tabUrl = tab.url || tab.pendingUrl || "";
+    if (tabUrl.startsWith(chrome.runtime.getURL(""))) {
       return;
     }
 
-    let state = await pruneHistory(windowId, await loadHistory(windowId));
+    let state = await pruneHistory(await loadHistory());
     if (state.entries[state.cursor] === tabId) {
       return;
     }
@@ -84,50 +78,47 @@ async function recordActivation(windowId, tabId) {
     }
 
     state.cursor = state.entries.length - 1;
-    await saveHistory(windowId, state);
+    await saveHistory(state);
   });
 }
 
-async function activateHistoryIndex(windowId, requestedIndex) {
-  return withWindowLock(windowId, async () => {
-    const state = await pruneHistory(windowId, await loadHistory(windowId));
-    if (requestedIndex < 0 || requestedIndex >= state.entries.length) {
-      await saveHistory(windowId, state);
-      return false;
-    }
-
-    const tabId = state.entries[requestedIndex];
-    suppressedActivations.set(windowId, tabId);
-    state.cursor = requestedIndex;
-    await saveHistory(windowId, state);
-
-    try {
-      await chrome.tabs.update(tabId, { active: true });
-      await chrome.windows.update(windowId, { focused: true });
-      return true;
-    } catch (error) {
-      suppressedActivations.delete(windowId);
-      throw error;
-    }
-  });
-}
-
-async function navigateHistory(direction) {
-  const currentWindow = await chrome.windows.getLastFocused();
-  const state = await pruneHistory(currentWindow.id, await loadHistory(currentWindow.id));
-  await saveHistory(currentWindow.id, state);
-
-  const targetIndex = state.cursor + direction;
-  if (targetIndex < 0 || targetIndex >= state.entries.length) {
+async function activateHistoryIndexUnlocked(requestedIndex) {
+  const state = await pruneHistory(await loadHistory());
+  if (requestedIndex < 0 || requestedIndex >= state.entries.length) {
+    await saveHistory(state);
     return false;
   }
 
-  return activateHistoryIndex(currentWindow.id, targetIndex);
+  const tabId = state.entries[requestedIndex];
+  const tab = await chrome.tabs.get(tabId);
+  state.cursor = requestedIndex;
+  await saveHistory(state);
+
+  await chrome.tabs.update(tabId, { active: true });
+  await chrome.windows.update(tab.windowId, { focused: true });
+  return true;
+}
+
+async function activateHistoryIndex(requestedIndex) {
+  return withHistoryLock(() => activateHistoryIndexUnlocked(requestedIndex));
+}
+
+async function navigateHistory(direction) {
+  return withHistoryLock(async () => {
+    const state = await pruneHistory(await loadHistory());
+    await saveHistory(state);
+    return activateHistoryIndexUnlocked(state.cursor + direction);
+  });
 }
 
 async function getCustomNames() {
   const stored = await chrome.storage.local.get(CUSTOM_NAMES_KEY);
   return stored[CUSTOM_NAMES_KEY] || {};
+}
+
+async function getCustomName(tabId) {
+  const names = await getCustomNames();
+  return names[String(tabId)] || "";
 }
 
 async function setCustomName(tabId, name) {
@@ -166,8 +157,7 @@ async function clearTabName(tabId) {
 }
 
 async function reapplyCustomName(tabId) {
-  const names = await getCustomNames();
-  const name = names[String(tabId)];
+  const name = await getCustomName(tabId);
   if (!name) {
     return;
   }
@@ -179,14 +169,44 @@ async function reapplyCustomName(tabId) {
   }
 }
 
+async function openRenameWindow() {
+  const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (!activeTab || !Number.isInteger(activeTab.id)) {
+    throw new Error("No active tab is available.");
+  }
+
+  const url = new URL(chrome.runtime.getURL("rename.html"));
+  url.searchParams.set("tabId", String(activeTab.id));
+  await chrome.windows.create({
+    url: url.href,
+    type: "popup",
+    width: 380,
+    height: 280,
+    focused: true
+  });
+}
+
+async function getRenameState(tabId) {
+  const tab = await chrome.tabs.get(tabId);
+  return {
+    tabId,
+    title: tab.title || tab.url || "Untitled tab",
+    url: tab.url || "",
+    customName: await getCustomName(tabId)
+  };
+}
+
 async function getPopupState() {
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!activeTab || !Number.isInteger(activeTab.id)) {
     throw new Error("No active tab is available.");
   }
 
-  const state = await pruneHistory(activeTab.windowId, await loadHistory(activeTab.windowId));
-  await saveHistory(activeTab.windowId, state);
+  const state = await withHistoryLock(async () => {
+    const nextState = await pruneHistory(await loadHistory());
+    await saveHistory(nextState);
+    return nextState;
+  });
 
   const tabs = await Promise.all(
     state.entries.map(async (tabId) => {
@@ -196,7 +216,8 @@ async function getPopupState() {
           id: tab.id,
           title: tab.title || tab.url || "Untitled tab",
           url: tab.url || "",
-          favIconUrl: tab.favIconUrl || ""
+          favIconUrl: tab.favIconUrl || "",
+          windowId: tab.windowId
         };
       } catch {
         return null;
@@ -204,80 +225,116 @@ async function getPopupState() {
     })
   );
 
-  const names = await getCustomNames();
   return {
     activeTabId: activeTab.id,
     activeWindowId: activeTab.windowId,
-    customName: names[String(activeTab.id)] || "",
     cursor: state.cursor,
     entries: tabs.filter(Boolean)
   };
 }
 
 async function removeTabFromState(tabId) {
-  const stored = await chrome.storage.local.get(null);
-  const updates = {};
+  await withHistoryLock(async () => {
+    const state = await loadHistory();
+    const removedIndex = state.entries.indexOf(tabId);
+    const entries = state.entries.filter((entry) => entry !== tabId);
+    let cursor = state.cursor;
 
-  for (const [key, value] of Object.entries(stored)) {
-    if (!key.startsWith(HISTORY_PREFIX) || !Array.isArray(value.entries)) {
-      continue;
+    if (removedIndex >= 0 && removedIndex < cursor) {
+      cursor -= 1;
+    } else if (removedIndex === cursor) {
+      cursor = Math.min(cursor, entries.length - 1);
     }
 
-    const currentTabId = value.entries[value.cursor];
-    const entries = value.entries.filter((entry) => entry !== tabId);
-    updates[key] = {
+    const nextState = {
       entries,
-      cursor: Math.max(0, entries.indexOf(currentTabId))
+      cursor: Math.max(-1, Math.min(cursor, entries.length - 1))
     };
 
     if (entries.length === 0) {
-      updates[key].cursor = -1;
-    } else if (updates[key].cursor < 0) {
-      updates[key].cursor = entries.length - 1;
+      nextState.cursor = -1;
     }
-  }
 
-  if (Object.keys(updates).length > 0) {
-    await chrome.storage.local.set(updates);
-  }
+    await saveHistory(nextState);
+  });
 
   await removeCustomName(tabId);
 }
 
-async function initializeOpenWindows() {
-  const windows = await chrome.windows.getAll({ populate: true });
-  const openWindowIds = new Set(windows.map((window) => window.id));
+async function initializeProfileHistory() {
   const stored = await chrome.storage.local.get(null);
-  const staleKeys = Object.keys(stored).filter((key) => {
-    if (!key.startsWith(HISTORY_PREFIX)) {
-      return false;
+  const legacyKeys = Object.keys(stored).filter((key) =>
+    key.startsWith(LEGACY_HISTORY_PREFIX)
+  );
+
+  await withHistoryLock(async () => {
+    let state = await pruneHistory(await loadHistory());
+
+    if (state.entries.length === 0 && legacyKeys.length > 0) {
+      const existingIds = await getExistingTabIds();
+      const entries = [];
+
+      for (const key of legacyKeys) {
+        const legacyEntries = stored[key]?.entries;
+        if (!Array.isArray(legacyEntries)) {
+          continue;
+        }
+
+        for (const tabId of legacyEntries) {
+          if (!existingIds.has(tabId)) {
+            continue;
+          }
+          const existingIndex = entries.indexOf(tabId);
+          if (existingIndex >= 0) {
+            entries.splice(existingIndex, 1);
+          }
+          entries.push(tabId);
+        }
+      }
+
+      state = {
+        entries: entries.slice(-HISTORY_LIMIT),
+        cursor: Math.min(entries.length, HISTORY_LIMIT) - 1
+      };
     }
-    return !openWindowIds.has(Number(key.slice(HISTORY_PREFIX.length)));
+
+    if (state.entries.length === 0) {
+      const [activeTab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+      if (activeTab && Number.isInteger(activeTab.id)) {
+        state = { entries: [activeTab.id], cursor: 0 };
+      }
+    }
+
+    await saveHistory(state);
   });
 
-  if (staleKeys.length > 0) {
-    await chrome.storage.local.remove(staleKeys);
+  if (legacyKeys.length > 0) {
+    await chrome.storage.local.remove(legacyKeys);
   }
-
-  await Promise.all(
-    windows.map(async (window) => {
-      const activeTab = window.tabs?.find((tab) => tab.active);
-      if (!activeTab || !Number.isInteger(activeTab.id)) {
-        return;
-      }
-
-      const state = await pruneHistory(window.id, await loadHistory(window.id));
-      if (state.entries.length === 0) {
-        await saveHistory(window.id, { entries: [activeTab.id], cursor: 0 });
-      } else {
-        await saveHistory(window.id, state);
-      }
-    })
-  );
 }
 
-chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
-  recordActivation(windowId, tabId).catch(console.error);
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  recordActivation(tabId).catch(console.error);
+});
+
+chrome.windows.onFocusChanged.addListener((windowId) => {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    return;
+  }
+
+  chrome.tabs
+    .query({ active: true, windowId })
+    .then(([tab]) => {
+      if (tab && Number.isInteger(tab.id)) {
+        return recordActivation(tab.id);
+      }
+      return undefined;
+    })
+    .catch(console.error);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  removeTabFromState(tabId).catch(console.error);
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
@@ -286,29 +343,22 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   }
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => {
-  removeTabFromState(tabId).catch(console.error);
-});
-
-chrome.windows.onRemoved.addListener((windowId) => {
-  suppressedActivations.delete(windowId);
-  chrome.storage.local.remove(historyKey(windowId)).catch(console.error);
-});
-
 chrome.commands.onCommand.addListener((command) => {
-  if (command === "history-back") {
+  if (command === "rename-current-tab") {
+    openRenameWindow().catch(console.error);
+  } else if (command === "navigate-back") {
     navigateHistory(-1).catch(console.error);
-  } else if (command === "history-forward") {
+  } else if (command === "navigate-forward") {
     navigateHistory(1).catch(console.error);
   }
 });
 
 chrome.runtime.onInstalled.addListener(() => {
-  initializeOpenWindows().catch(console.error);
+  initializeProfileHistory().catch(console.error);
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  initializeOpenWindows().catch(console.error);
+  initializeProfileHistory().catch(console.error);
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -320,8 +370,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         return { moved: await navigateHistory(message.direction) };
       case "activate-history-index":
         return {
-          moved: await activateHistoryIndex(message.windowId, message.index)
+          moved: await activateHistoryIndex(message.index)
         };
+      case "get-rename-state":
+        return getRenameState(message.tabId);
       case "rename-tab":
         await renameTab(message.tabId, message.name);
         return { success: true };
@@ -340,4 +392,4 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return true;
 });
 
-initializeOpenWindows().catch(console.error);
+initializeProfileHistory().catch(console.error);

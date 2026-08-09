@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Tab Trail",
-  "version": "1.0.0",
-  "description": "Rename tabs and navigate a per-window history of recently active tabs.",
+  "version": "1.1.0",
+  "description": "Rename tabs and navigate profile-wide history across browser windows.",
   "permissions": [
     "storage",
     "tabs"
@@ -41,20 +41,21 @@
     }
   ],
   "commands": {
-    "_execute_action": {
+    "rename-current-tab": {
       "suggested_key": {
         "default": "Alt+R"
-      }
+      },
+      "description": "Rename the current tab"
     },
-    "history-back": {
+    "navigate-back": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Left"
+        "default": "Alt+Shift+Left"
       },
       "description": "Go back through active-tab history"
     },
-    "history-forward": {
+    "navigate-forward": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Right"
+        "default": "Alt+Shift+Right"
       },
       "description": "Go forward through active-tab history"
     }

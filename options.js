@@ -1,7 +1,7 @@
 const labels = {
-  "_execute_action": "Open rename popup",
-  "history-back": "Previous active tab",
-  "history-forward": "Next active tab"
+  "rename-current-tab": "Rename current tab",
+  "navigate-back": "Previous active tab",
+  "navigate-forward": "Next active tab"
 };
 
 const isEdge = navigator.userAgent.includes("Edg/");

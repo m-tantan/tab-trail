@@ -1,6 +1,3 @@
-const nameInput = document.querySelector("#tab-name");
-const renameForm = document.querySelector("#rename-form");
-const resetButton = document.querySelector("#reset-name");
 const backButton = document.querySelector("#history-back");
 const forwardButton = document.querySelector("#history-forward");
 const shortcutsButton = document.querySelector("#shortcuts-button");
@@ -71,6 +68,9 @@ function renderHistory() {
       title.textContent = entry.title;
       url.className = "tab-url";
       url.textContent = formatUrl(entry.url);
+      if (entry.windowId !== popupState.activeWindowId) {
+        url.textContent += " · Other window";
+      }
       details.append(title, url);
       button.append(details);
       item.append(button);
@@ -80,7 +80,6 @@ function renderHistory() {
 
 async function refresh() {
   popupState = await sendMessage({ type: "get-popup-state" });
-  nameInput.value = popupState.customName;
   renderHistory();
 }
 
@@ -96,34 +95,11 @@ async function perform(action, successMessage) {
   }
 }
 
-renameForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  perform(async () => {
-    await sendMessage({
-      type: "rename-tab",
-      tabId: popupState.activeTabId,
-      name: nameInput.value
-    });
-    popupState.customName = nameInput.value.trim();
-  }, "Tab renamed.");
-});
-
-resetButton.addEventListener("click", () => {
-  perform(async () => {
-    await sendMessage({
-      type: "clear-tab-name",
-      tabId: popupState.activeTabId
-    });
-    nameInput.value = "";
-    popupState.customName = "";
-  }, "Original tab name restored.");
-});
-
 backButton.addEventListener("click", () => {
   perform(async () => {
     const result = await sendMessage({ type: "navigate-history", direction: -1 });
     if (result.moved) {
-      window.close();
+      await refresh();
     }
   });
 });
@@ -132,7 +108,7 @@ forwardButton.addEventListener("click", () => {
   perform(async () => {
     const result = await sendMessage({ type: "navigate-history", direction: 1 });
     if (result.moved) {
-      window.close();
+      await refresh();
     }
   });
 });
@@ -146,11 +122,10 @@ historyList.addEventListener("click", (event) => {
   perform(async () => {
     const result = await sendMessage({
       type: "activate-history-index",
-      windowId: popupState.activeWindowId,
       index: Number(button.dataset.index)
     });
     if (result.moved) {
-      window.close();
+      await refresh();
     }
   });
 });
@@ -159,6 +134,4 @@ shortcutsButton.addEventListener("click", () => {
   chrome.runtime.openOptionsPage();
 });
 
-refresh()
-  .then(() => nameInput.focus())
-  .catch((error) => setStatus(error.message, true));
+refresh().catch((error) => setStatus(error.message, true));
