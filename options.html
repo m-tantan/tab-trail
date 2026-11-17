@@ -3,16 +3,52 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tab Trail shortcuts</title>
+    <title>Tab Trail settings</title>
     <link rel="stylesheet" href="options.css">
   </head>
   <body>
     <main>
       <p class="eyebrow">Tab Trail</p>
-      <h1>Keyboard shortcuts</h1>
+      <h1>Settings</h1>
+      <section>
+        <h2>Tab history</h2>
+        <label for="history-limit">Maximum tabs in the trail</label>
+        <select id="history-limit" disabled>
+          <option value="20">20 tabs</option>
+          <option value="50">50 tabs</option>
+          <option value="100">100 tabs</option>
+          <option value="150">150 tabs</option>
+          <option value="200">200 tabs</option>
+        </select>
+        <p>Search always includes all open tabs, regardless of the trail size.
+          Reducing the limit trims the trail while keeping its current position.</p>
+        <p id="settings-status" role="status" aria-live="polite"></p>
+      </section>
+
+      <h2 class="shortcuts-heading">Keyboard shortcuts</h2>
       <p>
         Chromium requires shortcut changes to be made on its extension-shortcuts page.
-        The mappings below show what is currently assigned in this browser profile.
+        The mappings below distinguish registered commands with no keys assigned from commands
+        missing in this browser profile.
+      </p>
+      <section id="reload-notice" hidden aria-label="Extension reload required">
+        <h2>Extension reload required</h2>
+        <p>
+          A command is not registered in the running extension. Reload Tab Trail to load
+          the updated manifest, then reopen Settings and the browser's shortcut page.
+          Saved names, trail settings, and existing shortcuts are retained.
+        </p>
+        <button id="reload-extension" type="button">Reload extension</button>
+      </section>
+      <p id="extension-version"></p>
+      <p id="shortcut-warning" hidden>
+        The search shortcut is not assigned. On the shortcut page, set
+        <strong>Activate the extension</strong> to <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Q</kbd>.
+      </p>
+      <p>
+        Search is listed as <strong>Activate the extension</strong> in the browser's shortcut editor.
+        Set <strong>Copy selected tab links</strong> to <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>C</kbd>.
+        Chromium permits only four default shortcuts, so this additional command must be assigned on that page.
       </p>
 
       <section>

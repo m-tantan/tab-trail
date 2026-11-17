@@ -10,7 +10,7 @@
 }
 
 body {
-  width: 360px;
+  width: 400px;
   margin: 0;
 }
 
@@ -105,7 +105,7 @@ button:disabled {
 }
 
 ol {
-  max-height: 340px;
+  max-height: 230px;
   margin: 7px 0 0;
   padding: 0;
   overflow-y: auto;
@@ -174,6 +174,71 @@ ol {
   font-size: 11px;
 }
 
+.search-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#tab-search {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #b9c2d3;
+  border-radius: 8px;
+  color: inherit;
+  background: #ffffff;
+  font: inherit;
+}
+
+#search-hint {
+  margin-top: 5px;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-row .history-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.rename-button {
+  flex: none;
+  padding: 5px 6px;
+  font-size: 10px;
+}
+
+.copy-tabs {
+  width: 100%;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+#reload-extension {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.needs-reload ol {
+  max-height: 120px;
+}
+
+#extension-version {
+  margin-top: 4px;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid #315bea;
+  outline-offset: 1px;
+}
+
 #status {
   min-height: 16px;
   margin-top: 10px;
@@ -207,5 +272,21 @@ ol {
   .history-item.current {
     color: #aabfff;
     background: #28385d;
+  }
+
+  #tab-search {
+    border-color: #4c5870;
+    background: #1b2230;
+  }
+
+  .tab-url,
+  .muted,
+  #status,
+  .section-heading span {
+    color: #a7b3c9;
+  }
+
+  #status.error {
+    color: #ffaba8;
   }
 }

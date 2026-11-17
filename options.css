@@ -104,6 +104,35 @@ button {
   cursor: pointer;
 }
 
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+select {
+  padding: 8px 12px;
+  border: 1px solid #b9c2d3;
+  border-radius: 7px;
+  color: inherit;
+  background: #ffffff;
+  font: inherit;
+}
+
+.shortcuts-heading {
+  margin-top: 32px;
+}
+
+#settings-status {
+  min-height: 20px;
+  font-size: 13px;
+}
+
+#settings-status.error,
+kbd.unassigned {
+  color: #b42318;
+}
+
 #copy-status {
   min-height: 24px;
   margin-bottom: 0;
@@ -127,8 +156,14 @@ button {
   }
 
   kbd,
-  code {
+  code,
+  select {
     border-color: #4c5870;
     background: #121722;
+  }
+
+  #settings-status.error,
+  kbd.unassigned {
+    color: #ffaba8;
   }
 }

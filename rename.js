@@ -3,6 +3,7 @@ const nameInput = document.querySelector("#tab-name");
 const renameForm = document.querySelector("#rename-form");
 const resetButton = document.querySelector("#reset-name");
 const statusElement = document.querySelector("#status");
+const sleepingNote = document.querySelector("#sleeping-note");
 
 const tabId = Number(new URLSearchParams(location.search).get("tabId"));
 
@@ -26,6 +27,7 @@ async function initialize() {
 
   const state = await sendMessage({ type: "get-rename-state", tabId });
   currentTitle.textContent = state.title;
+  sleepingNote.hidden = !state.sleeping;
   nameInput.value = state.customName;
   nameInput.placeholder = state.title;
   nameInput.focus();
